@@ -113,7 +113,7 @@ def addAddress(request):
                 custom = request.POST.get("custom")
                 phone = request.POST.get("phone")
                 address = school + building + num
-                user_id=4
+                user_id = 4
                 Address.objects.create(address=address, custom_name=custom, phone=phone, user_id=user_id)
             #返回数据
                 return redirect("login:收货地址界面")
@@ -124,7 +124,7 @@ def addAddress(request):
                 }
                 return render(request, "login/address.html", context)
         else:
-            return render(request, "login/address.html")
+            return redirect("login:收货地址界面")
     return render(request, "login/address.html")
 
 
