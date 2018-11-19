@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 	<head>
@@ -10,10 +11,10 @@
         <meta name="renderer" content="webkit">
         <meta http-equiv="Cache-Control" content="no-siteapp" />
         <link rel="icon" type="image/png" href="/theme/default/images/favicon.png">
-		<link href="css/amazeui.min.css" rel="stylesheet" type="text/css" />
-		<link href="css/style.css" rel="stylesheet" type="text/css" />
-		<script src="js/jquery-1.10.2.min.js"></script>
-		<script src="js/time.js"></script>
+		<link href="{% static 'css/amazeui.min.css' %}" rel="stylesheet" type="text/css" />
+		<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" />
+		<script src="{% static 'js/jquery-1.10.2.min.js' %}"></script>
+		<script src="{% static 'js/time.js' %}"></script>
 	</head>
 	<body>
 		<header data-am-widget="header" class="am-header am-header-default sq-head ">
@@ -31,18 +32,24 @@
 	    	<img src="images/logo.png" />
 	    </div>-->
 	    <div style="height: 3rem;"></div>
-	    <input type="text" name="mobile"  placeholder="请输入手机号" class="login-name">
-	    <input type="text" name="mobile"  placeholder="请输入密码" class="login-password">
-	    <input type="password" name="password"  placeholder="确认密码" class="login-name">
-	    <div class="yzm" style="margin-top: 1.5rem;">
-	    	<input type="text" class="reg-yzm" placeholder="输入验证码" />
-	    	<input type="button" class="yzm-hq" value="获取验证码" />
-	    </div>
-	     <input type="button" class="login-btn" value="立即注册">
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="text" name="mobile"  placeholder="请输入手机号" class="login-name" value="{{ data.mobile }}">
+            <p>{{ errors.mobile.0 }}</p>
+            <input type="text" name="password"  placeholder="请输入密码" class="login-password" value="{{ data.password }}">
+            <p>{{ errors.password.0 }}</p>
+            <input type="password" name="rpassword"  placeholder="确认密码" class="login-name" value="{{ data.rpassword }}">
+            <p>{{ errors.rpassword.0 }}</p>
+            <div class="yzm" style="margin-top: 1.5rem;">
+                <input type="text" class="reg-yzm" placeholder="输入验证码" />
+                <input type="button" class="yzm-hq" value="获取验证码" />
+            </div>
+             <input type="submit" class="login-btn" value="立即注册">
+        </form>
 	    <div class="agree">
 	    	<input type="checkbox" name="checkbox" value="同意" checked="">&nbsp;同意
 		    <a href="" class="xy">《用户协议》</a>
-		      <div class="r-login">已有账号，请<a href="login.html" class="l-login">登录</a></div>
+		      <div class="r-login">已有账号，请<a href="{% url 'login:登录界面' %}" class="l-login">登录</a></div>
 	    </div>
 	   
 	</body>
