@@ -3,7 +3,7 @@ from django.core import validators
 from django.core.validators import RegexValidator
 
 #注册验证
-from login.models import Users
+from login.models import Users, Address
 
 
 class UsersForm(forms.Form):
@@ -29,12 +29,31 @@ class UsersForm(forms.Form):
             #验证成功
             return data
 
+#单个字段校验
+    def clean_mobile(self):
+        data = self.cleaned_data
+        mobile = data.get("mobile")
+        if Users.objects.filter(phone=mobile):
+            raise forms.ValidationError("手机号已存在")
+        else:
+            return data
+
 #登录验证
 class LoginForm(forms.Form):
     mobile = forms.CharField(max_length=11, required=True,
-                             error_messages={"required": "手机号必填"},
+                             error_messages={"required": "手机号必填", "max_length": "最大长度不能超过11"},
                              validators=[RegexValidator(r'^1[13456789]\d{9}$', "提示信息:手机号码格式错误"), ],
                              strip=True,
                              )
     password = forms.CharField(max_length=20, required=True,
                                error_messages={"required": "密码必填", "max_length": "最大长度不能超过20"})
+
+
+
+#添加地址验证
+class AddAddressForm(forms.Form):
+    school = forms.CharField(max_length=50, required=True, error_messages={"required": "宿舍必填", "max_length": "最大长度不超过50"})
+    building = forms.CharField(max_length=50, required=False, error_messages={"max_length": "最大长度不超过50"})
+    num = forms.CharField(max_length=50, required=False, error_messages={"max_length": "最大长度不超过50"})
+    custom = forms.CharField(max_length=20, required=True, error_messages={"required": "收货人必填", "max_length": "最大长度不超过20"})
+    phone = forms.CharField(max_length=11, required=True, error_messages={"required": "手机号必填", "max_length": "最大长度不超过11位"})
