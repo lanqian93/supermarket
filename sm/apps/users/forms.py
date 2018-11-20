@@ -1,3 +1,5 @@
+import hashlib
+
 from django import forms
 from django.core import validators
 from django.core.validators import RegexValidator
@@ -48,10 +50,41 @@ class LoginForm(forms.Form):
     password = forms.CharField(max_length=20, required=True,
                                error_messages={"required": "密码必填", "max_length": "最大长度不能超过20"})
 
+    def clean(self):  # 综合校验
+        cleaned_data = self.cleaned_data
+        # 获取用手机和密码
+        phone = cleaned_data.get('mobile')
+        password = cleaned_data.get('password')
+        # 验证手机号码是否存在
+        if all([phone, password]):
+            # 根据手机号码获取用户
+            try:
+                user = Users.objects.get(phone=phone)
+            except Users.DoesNotExist:
+                raise forms.ValidationError({"mobile": "该用户不存在!"})
+
+            # 判断密码是否正确
+            h = hashlib.md5(password.encode("utf-8"))
+            if user.password != h.hexdigest():
+                raise forms.ValidationError({"password": "密码填写错误!"})
+
+            # 正确
+            # 将用户信息保存到cleaned_data中
+            cleaned_data['user'] = user
+            return cleaned_data
+        else:
+            return cleaned_data
 
 
 #修改个人信息校验
 class UpdateUser(forms.ModelForm):
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        clean = self.cleaned_data
+        if Users.objects.filter(phone=phone):
+            raise forms.ValidationError("手机号已被占用")
+        else:
+            return phone
     class Meta:
         model = Users
         fields = ['phone', ]
@@ -62,6 +95,8 @@ class UpdateUser(forms.ModelForm):
                 "RegexValidator": "手机格式错误"
             }
         }
+
+
 
 
 #添加地址验证

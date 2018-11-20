@@ -5,6 +5,7 @@ from django.views import View
 
 from db.base_view import BaseVerifyView
 from users.forms import UsersForm, LoginForm, UpdateUser
+from users.helper import logining
 from users.models import Users
 
 """注册视图"""
@@ -40,23 +41,10 @@ class LoginView(View):
         # 表单验证
         form = LoginForm(request.POST)
         if form.is_valid():  # 验证成功
-            # 接收数据
-            phone = request.POST.get("mobile")
-            password = request.POST.get("password")
-            pwd = hashlib.md5(password.encode("utf-8"))
-            # 处理数据
-            try:
-                user = Users.objects.get(phone=phone)
-            except Users.DoesNotExist:  # 结果不存在错误
-                return redirect("user:登录")
-            except Users.MultipleObjectsReturned:  # 多个结果错误
-                return redirect("user:登录")
-            if user.password == pwd.hexdigest():  # 判断密码
                 #保存登录的session
-                request.session['id'] = user.id
+                user = form.cleaned_data.get("user")
+                logining(request, user)
                 return redirect("user:用户中心")
-            else:
-                return redirect("user:登录")
             # 返回结果
         else:  # 验证失败
             context = {
@@ -82,7 +70,7 @@ class MemberView( BaseVerifyView):
 
 
 """用户信息"""
-class UserInforView( BaseVerifyView):
+class UserInforView(BaseVerifyView):
     def get(self, request):
         id = request.session['id']
         user = Users.objects.get(pk=id)
@@ -97,7 +85,7 @@ class UserInforView( BaseVerifyView):
         #校验
         form = UpdateUser(data)
         if form.is_valid():
-            id = 1
+            id = request.session['id']
             phone = data.get("phone")
             nickname = data.get("nickname")
             gender = data.get("gender")
@@ -106,26 +94,29 @@ class UserInforView( BaseVerifyView):
             birth_of_date = data.get("birth_of_date")
             address = data.get("address")
             if birth_of_date:
+                user = Users.objects.filter(pk=id).update(phone=phone, nickname=nickname, gender=gender,
+                                                   school_name=school_name, hometown=hometown,
+                                                   birth_of_date=birth_of_date, address=address)
                 user = Users.objects.get(pk=id)
                 context = {
                     "user": user
                 }
-                Users.objects.filter(pk=id).update(phone=phone, nickname=nickname, gender=gender, school_name=school_name,
-                                                   hometown=hometown, birth_of_date=birth_of_date, address=address
-                                                   )
-                return redirect("user:用户信息", context)
+                return render(request, "user/infor.html", context)
             else:
-                user = Users.objects.get(pk=id)
-                context = {
-                    "user": user
-                }
                 Users.objects.filter(pk=id).update(phone=phone, nickname=nickname, gender=gender,
                                                    school_name=school_name,
                                                    hometown=hometown, address=address
                                                    )
-                return redirect("user:用户信息", context)
+                user = Users.objects.get(pk=id)
+                context = {
+                    "user": user
+                }
+                return render(request, "user/infor.html", context)
         else:
+            id = request.session['id']
+            user = Users.objects.get(pk=id)
             context = {
                 "errors": form.errors,
+                "user": user
             }
             return render(request, "user/infor.html", context)

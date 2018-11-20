@@ -12,3 +12,12 @@ def login_verify(func):
         else:
             return func(request, *args, **kwargs)
     return verify
+
+
+
+def logining(request, user):
+        # 登陆保存session的方法
+        # 将用户id和手机号码,保存到session中
+    request.session['id'] = user.pk
+    request.session['phone'] = user.phone
+    # request.session['head'] = user.head
