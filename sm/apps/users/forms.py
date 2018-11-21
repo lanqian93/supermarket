@@ -5,6 +5,8 @@ from django.core import validators
 from django.core.validators import RegexValidator
 
 #注册验证
+from django_redis import get_redis_connection
+
 from users.models import Users
 
 
@@ -19,6 +21,7 @@ class UsersForm(forms.Form):
 
     rpassword = forms.CharField(max_length=20, required=True,
                                error_messages={"required": "密码必填", "max_length": "最大长度不能超过20"})
+    code = forms.CharField(error_messages={"required": "验证码必填!"})
 
     def clean(self):  #综合校验
         #得到数据
@@ -39,6 +42,23 @@ class UsersForm(forms.Form):
             raise forms.ValidationError("手机号已存在")
         else:
             return mobile
+#验证码校验
+    def clean_code(self):
+        #获取用户表单提交的验证码
+        phone = self.cleaned_data.get("mobile")
+        f_code = self.cleaned_data.get("code")
+        #获取redis上的验证码
+        r = get_redis_connection("default")
+        if phone and r.get(phone):
+            s_code = r.get(phone).decode("utf-8")
+            if s_code is None:
+                raise forms.ValidationError("验证码不存在或者已过期")
+            if f_code != s_code:
+                raise forms.ValidationError("验证码错误")
+            return f_code
+        else:
+            raise forms.ValidationError("验证码错误")
+
 
 #登录验证
 class LoginForm(forms.Form):

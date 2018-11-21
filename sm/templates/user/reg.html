@@ -35,15 +35,16 @@
         <form action="" method="post">
             {% csrf_token %}
             <input type="text" name="mobile"  placeholder="请输入手机号" class="login-name" value="{{ data.mobile }}">
-            <p>{{ errors.mobile.0 }}</p>
+            <p class="am-text-danger">{{ errors.mobile.0 }}</p>
             <input type="password" name="password"  placeholder="请输入密码" class="login-password" value="{{ data.password }}">
-            <p>{{ errors.password.0 }}</p>
+            <p class="am-text-danger">{{ errors.password.0 }}</p>
             <input type="password" name="rpassword"  placeholder="确认密码" class="login-name" value="{{ data.rpassword }}">
-            <p>{{ errors.rpassword.0 }}</p>
+            <p class="am-text-danger">{{ errors.rpassword.0 }}</p>
             <div class="yzm" style="margin-top: 1.5rem;">
-                <input type="text" class="reg-yzm" placeholder="输入验证码" />
-                <input type="button" class="yzm-hq" value="获取验证码" />
+                <input type="text" name="code" class="reg-yzm" placeholder="输入验证码" />
+                <input type="button"  class="yzm-hq" value="获取验证码" />
             </div>
+            <p class="am-text-danger">{{ errors.code.0 }}</p>
              <input type="submit" class="login-btn" value="立即注册">
         </form>
 	    <div class="agree">
@@ -53,4 +54,54 @@
 	    </div>
 	   
 	</body>
+    <script>
+        $(function () {
+          $(".yzm-hq").on("click", function () {
+              {#获取手机号文本框的值#}
+              var phone = $("input[name='mobile']").val();
+              {#判断手机号格式#}
+              var h = /^1[3-9]\d{9}$/;
+              if(!h.test(phone)){
+                  alert("手机号码格式错误");
+                  return;
+              }
+                {#发送ajax到后台验证#}
+              var that = this;
+              $.ajax({
+                  type: "post",
+                  url: "{% url 'user:发送验证码' %}",
+                  data: {"mobile": phone, "csrfmiddlewaretoken":"{{ csrf_token }}"},
+                  dataType: "json",
+                  success: function (data) {
+                      if(data.err == 0){
+                          //发送成功,开始倒计时
+                            var count = 60;
+                            //颜色变灰
+                            $(that).css("background-color","gray");
+                            //不能再点击
+                            $(that).attr("disabled","disabled");
+                            var timer = window.setInterval(function () {
+                                //周期性执行函数
+                                --count;
+                                var msg = count + "秒后重新发送"
+                                $(that).val(msg);
+
+                                //判断count为0的时候,重新可以点击
+                                if(count == 0){
+                                    //颜色变灰
+                                    $(that).css("background-color","#76bb2a");
+                                    //不能再点击
+                                    $(that).removeAttr("disabled");
+                                    //文字显示原来提示
+                                    $(that).val("获取验证码");
+                                    //清除定时
+                                    window.clearInterval(timer);
+                                }
+                            },1000);
+                      }
+                  }
+              })
+          })
+        })
+    </script>
 </html>

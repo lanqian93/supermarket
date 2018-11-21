@@ -1,11 +1,16 @@
 import hashlib
+import random
+import re
+import uuid
 
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
+from django_redis import get_redis_connection
 
 from db.base_view import BaseVerifyView
 from users.forms import UsersForm, LoginForm, UpdateUser
-from users.helper import logining
+from users.helper import logining, send_sms
 from users.models import Users
 
 """注册视图"""
@@ -120,3 +125,48 @@ class UserInforView(BaseVerifyView):
                 "user": user
             }
             return render(request, "user/infor.html", context)
+
+
+
+"""收货地址列表"""
+class AddressListView(BaseVerifyView):
+    def get(self, request):
+        return render(request, "user/gladdress.html")
+    def post(self, request):
+        pass
+
+
+"""添加收货地址"""
+class AddAddressView(BaseVerifyView):
+    def get(self, request):
+        return render(request, "user/address.html")
+    def post(self):
+        pass
+
+
+#发送验证码
+def send_code(request):
+    if request.method == "POST":
+        #接收手机号
+        phone = request.POST.get("mobile", "")
+        # 验证手机格式是否正确
+        phone_re = re.compile("^1[3-9]\d{9}$")
+        rs = re.search(phone_re, phone)
+        if rs is None: #验证失败
+            return JsonResponse({"err": 1, "msg": "手机格式错误"})
+        # 生成随机码 随机数字组成
+        r_code = "".join([str(random.randint(0, 9)) for _ in range(4)])
+
+        #将随机码保存到redis上面
+        r = get_redis_connection("default")
+        r.set(phone, r_code)
+        r.expire(phone, 120)
+
+        #发送短信
+        print(r_code)
+        # __business_id = uuid.uuid1()
+        # params = "{\"code\":\"%s\",\"product\":\"yshs\"}" % r_code
+        # print(send_sms(__business_id, phone, "注册验证", "SMS_2245271", params))
+        return JsonResponse({"err": 0})
+    else:
+        return JsonResponse({"err": 1, "msg": "请求方式错误"})

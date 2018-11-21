@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>超市</title>
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+        <link rel="icon" type="image/png" href="/theme/default/images/favicon.png">
+		<link href="{% static 'css/amazeui.min.css' %}" rel="stylesheet" type="text/css" />
+		<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" />
+		<script src="{% static 'js/area.js' %}"></script>
+	</head>
+	<body>
+		<header data-am-widget="header" class="am-header am-header-default sq-head ">
+			<div class="am-header-left am-header-nav">
+				<a href="javascript:history.back()" class="">
+					<i class="am-icon-chevron-left"></i>
+				</a>
+			</div>
+			<h1 class="am-header-title">
+  	            <a href="" class="">新增收货地址</a>
+            </h1>
+	    </header>
+	    <div style="height: 60px;"></div>
+        <form action="" method="post">
+            {% csrf_token %}
+            <ul class="address">
+	    	<li>
+                <input type="text" class="add-input"  name="school" placeholder="宿舍区" />
+	    	</li>
+                <p>{{ errors.school.0 }}</p>
+	    	<li>
+	    		<input type="text" class="add-input"  name="building" placeholder="哪栋楼" />
+	    	</li>
+                <p>{{ errors.building.0 }}</p>
+	    	<li><input type="text" class="add-input" name="num" placeholder="你在哪" /></li>
+                <p>{{ errors.num.0 }}</p>
+	    	<li><input type="text" class="add-input" name="custom" placeholder="收货人" /></li>
+                <p>{{ errors.custom.0 }}</p>
+	    	<li><input type="text" class="add-input" name="phone" placeholder="13000000000" /></li>
+                <p>{{ errors.phone.0 }}</p>
+	    </ul>
+	    <div class="moren">
+	    	<label class="am-checkbox am-warning">
+                 <input type="checkbox" checked="checked" value="" data-am-ucheck checked>设为默认
+            </label>
+
+	    </div>
+	    <input type="submit" class="login-btn" value="确认提交">
+        </form>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/amazeui.min.js' %}"></script>
+	</body>
+</html>
