@@ -9,7 +9,7 @@ from django.views import View
 from django_redis import get_redis_connection
 
 from db.base_view import BaseVerifyView
-from users.forms import UsersForm, LoginForm, UpdateUser
+from users.forms import UsersForm, LoginForm, UpdateUser, ForgetForm
 from users.helper import logining, send_sms
 from users.models import Users
 
@@ -64,7 +64,22 @@ class ForgetView(View):
     def get(self, request):
         return render(request, "user/forgetpassword.html")
     def post(self, request):
-        pass
+        form = ForgetForm(request.POST)
+        if form.is_valid():
+            phone = form.cleaned_data.get("mobile")
+            user = Users.objects.get(phone=phone)
+            pwd = form.cleaned_data.get("password")
+            p = hashlib.md5(pwd.encode("utf-8"))
+            user.password = p.hexdigest()
+            user.save()
+            return redirect("user:登录")
+        else:
+            context = {
+                "errors": form.errors
+            }
+            return render(request, "user/forgetpassword.html", context)
+
+
 
 """用户中心"""
 class MemberView( BaseVerifyView):
@@ -144,7 +159,7 @@ class AddAddressView(BaseVerifyView):
         pass
 
 
-#发送验证码
+"""发送验证码"""
 def send_code(request):
     if request.method == "POST":
         #接收手机号
@@ -170,3 +185,4 @@ def send_code(request):
         return JsonResponse({"err": 0})
     else:
         return JsonResponse({"err": 1, "msg": "请求方式错误"})
+
