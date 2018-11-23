@@ -150,13 +150,13 @@ class ForgetForm(forms.Form):
 
 #修改个人信息校验
 class UpdateUser(forms.ModelForm):
-    def clean_phone(self):
-        phone = self.cleaned_data.get('phone')
-        clean = self.cleaned_data
-        if Users.objects.filter(phone=phone):
-            raise forms.ValidationError("手机号已被占用")
-        else:
-            return phone
+    # def clean_phone(self):
+    #     phone = self.cleaned_data.get('phone')
+    #     clean = self.cleaned_data
+    #     if Users.objects.filter(phone=phone):
+    #         raise forms.ValidationError("手机号已被占用")
+    #     else:
+    #         return phone
     class Meta:
         model = Users
         fields = ['phone', ]

@@ -26,7 +26,7 @@ def logining(request, user):
         # 将用户id和手机号码,保存到session中
     request.session['id'] = user.pk
     request.session['phone'] = user.phone
-    # request.session['head'] = user.head
+    request.session['head'] = user.head
 
 
 

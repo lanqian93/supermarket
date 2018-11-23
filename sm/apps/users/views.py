@@ -84,7 +84,11 @@ class ForgetView(View):
 """用户中心"""
 class MemberView( BaseVerifyView):
     def get(self, request):
-        return render(request, "user/member.html")
+        context = {
+            "phone": request.session.get('phone'),
+            "head": request.session.get('head'),
+        }
+        return render(request, "user/member.html", context)
     def post(self, request):
         pass
 
@@ -95,7 +99,8 @@ class UserInforView(BaseVerifyView):
         id = request.session['id']
         user = Users.objects.get(pk=id)
         context = {
-            "user": user
+            "user": user,
+            "head": request.session.get("head")
         }
         return render(request, "user/infor.html", context)
     def post(self, request):
@@ -113,25 +118,22 @@ class UserInforView(BaseVerifyView):
             hometown = data.get("hometown")
             birth_of_date = data.get("birth_of_date")
             address = data.get("address")
-            if birth_of_date:
-                user = Users.objects.filter(pk=id).update(phone=phone, nickname=nickname, gender=gender,
-                                                   school_name=school_name, hometown=hometown,
-                                                   birth_of_date=birth_of_date, address=address)
-                user = Users.objects.get(pk=id)
-                context = {
-                    "user": user
-                }
-                return render(request, "user/infor.html", context)
-            else:
-                Users.objects.filter(pk=id).update(phone=phone, nickname=nickname, gender=gender,
-                                                   school_name=school_name,
-                                                   hometown=hometown, address=address
-                                                   )
-                user = Users.objects.get(pk=id)
-                context = {
-                    "user": user
-                }
-                return render(request, "user/infor.html", context)
+            user = Users.objects.get(pk=id)
+            user.phone = phone
+            user.nickname = nickname
+            user.school_name = school_name
+            user.hometown = hometown
+            user.birth_of_date = birth_of_date
+            user.address = address
+            user.gender = gender
+            user.head = request.FILES['head']
+            user.save()
+            #重写session
+            logining(request, user)
+            context = {
+                "user": user
+            }
+            return render(request, "user/infor.html", context)
         else:
             id = request.session['id']
             user = Users.objects.get(pk=id)

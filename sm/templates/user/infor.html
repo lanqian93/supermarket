@@ -27,21 +27,22 @@
             </h1>
 	    </header>
 	    <div style="height: 49px;"></div>
-        <form action=""  method="post">
+        <form action=""  method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <ul class="safty1">
 	    	<li>
 	    		<a href="">
 	    			<i style="margin-top: 25px;">头像</i>
 	    			<div class="infor-pic">
-	    				<img src="{% static 'images/infortx.png' %}" />
+	    				<img src="{{ MEDIA_URL }}{{ head }}" />
 	    			</div>
+                    <input type="file" name="head">
 	    		</a>
 	    	</li>
 	    	<li>
 
 	    			<i>昵称</i>
-	    			<input type="text" value="{{ user.nickname }}" name="nickname" class="infor-tele"/>
+	    			<input type="text" value="{{ user.nickname|default:"" }}" name="nickname" class="infor-tele"/>
 
 	    	</li>
 	    	<li>
@@ -68,7 +69,7 @@
 	    	</li><li>
 
 	    			<i>生日</i>
-                    <input type="date" value="{{ user.birth_of_date }}" name="birth_of_date" class="infor-tele" />
+                    <input type="date" value="{{ user.birth_of_date|date:'Y-m-d'}}" name="birth_of_date" class="infor-tele" />
 
 	    	</li>
 	    </ul>
@@ -76,15 +77,15 @@
 	     <ul class="safty1">
 	    	<li>
 	    			<i>学校</i>
-	    			<input type="text" value="{{ user.school_name }}" name="school_name" class="infor-tele" />
+	    			<input type="text" value="{{ user.school_name|default:''}}" name="school_name" class="infor-tele" />
 	    	</li>
 	    	<li>
 	    			<i>位置</i>
-	    			<input type="text" value="{{ user.address }}" name="address" class="infor-tele"/>
+	    			<input type="text" value="{{ user.address|default:''}}" name="address" class="infor-tele"/>
 	    	</li>
 	    	<li>
 	    			<i>故乡</i>
-                    <input  type="text" value="{{ user.hometown }}" name="hometown" class="infor-tele" />
+                    <input  type="text" value="{{ user.hometown|default:''}}" name="hometown" class="infor-tele" />
 	    	</li>
 	    	<li>
 	    			<i>手机</i>

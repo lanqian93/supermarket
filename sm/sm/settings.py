@@ -71,6 +71,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -152,3 +153,10 @@ SESSION_CACHE_ALIAS = "default"
 #短信配置
 ACCESS_KEY_ID = "LTAI2qSiJdWP87em"
 ACCESS_KEY_SECRET = "FzORQ587PgGBoOAdmxzCjaxQi8klUi"
+
+
+#上传根目录
+MEDIA_URL = "/static/media/"
+
+#相对位置
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
