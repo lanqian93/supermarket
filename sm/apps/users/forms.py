@@ -159,7 +159,7 @@ class UpdateUser(forms.ModelForm):
     #         return phone
     class Meta:
         model = Users
-        fields = ['phone', ]
+        fields = ['phone', 'head']
 
         error_messages = {
             "phone": {

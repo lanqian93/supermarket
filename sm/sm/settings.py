@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'goods.apps.GoodsConfig',   #商品模块
     'cart.apps.CartConfig',   #购物车模块
     'order.apps.OrderConfig',  #订单模块
+    'ckeditor',  # 添加ckeditor富文本编辑器
+    'ckeditor_uploader',  # 添加ckeditor富文本编辑器文件上传部件
 ]
 
 MIDDLEWARE = [
@@ -133,6 +135,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
 
+# 设置静态文件根目录  上线的时候使用
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 #redis配置
 CACHES = {
@@ -160,3 +164,13 @@ MEDIA_URL = "/static/media/"
 
 #相对位置
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
+
+#富文本上传路径
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+# 编辑器样式配置
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+    },
+}

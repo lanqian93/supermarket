@@ -108,7 +108,7 @@ class UserInforView(BaseVerifyView):
         data = request.POST
         #处理数据
         #校验
-        form = UpdateUser(data)
+        form = UpdateUser(data,request.FILES)
         if form.is_valid():
             id = request.session['id']
             phone = data.get("phone")
@@ -126,14 +126,18 @@ class UserInforView(BaseVerifyView):
             user.birth_of_date = birth_of_date
             user.address = address
             user.gender = gender
-            user.head = request.FILES['head']
+
+            cleaned_data = form.cleaned_data
+
+            if request.FILES.get('head'):
+                user.head = cleaned_data.get('head')
             user.save()
             #重写session
             logining(request, user)
             context = {
                 "user": user
             }
-            return render(request, "user/infor.html", context)
+            return redirect("user:用户中心")
         else:
             id = request.session['id']
             user = Users.objects.get(pk=id)
