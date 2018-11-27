@@ -1,9 +1,13 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
 
 #商城首页
+from django_redis import get_redis_connection
+
 from goods.models import Cycle, Activity, SpecialGoods, Special, GoodsSku, Category
+from django_redis import get_redis_connection
 
 
 class IndexView(View):
@@ -97,12 +101,23 @@ class CategoryView(View):
             page = pagniator.page(pagniator.num_pages)
         except PageNotAnInteger:
             page = pagniator.page(1)
+        #获取商品总数
+        cart_count = 0
+        user_id = request.session.get("id")
+        r = get_redis_connection('default')
+        cart_key = "cart_key_{}".format(user_id)
+        cart_vals = r.hvals(cart_key)
+        # print(cart_count)
+        for v in cart_vals:
+            cart_count += int(v)
         context = {
             "cs": cs,
             "goods": page,
             "cate_id": cate_id,
             "order": order,
+            "cart_count": cart_count,
         }
         return render(request, "goods/category.html", context)
-    def post(self):
+    def post(self, request):
         pass
+

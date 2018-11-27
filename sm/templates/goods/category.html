@@ -42,8 +42,11 @@
 				</a>
 			</div>
 		    <div class="cate-search">
-		    	<input type="text" class="cate-input" placeholder="请输入您要的搜索的产品关键词" />
-		    	<input type="button" class="cate-btn" />
+                <form action="/search/" method="get">
+                    <input type="text" name="q" class="cate-input" placeholder="请输入您要的搜索的产品关键词" />
+		    	    <input type="submit" value="" class="cate-btn" />
+                </form>
+
 	        </div>
 	    </header>
 	    <div style="height: 49px;"></div>
@@ -74,7 +77,7 @@
                 <div class="list-cart">
 	                <div class="d-stock ">
 			                <a class="decrease">-</a>
-			                <input id="num" readonly="" class="text_box" name="" type="text" value="0">
+			                <input id="num" readonly="" sku_id={{ good.pk }} class="text_box" name="" type="text" value="0">
 			                <a class="increase">+</a>
 	                </div>
                 </div>
@@ -100,7 +103,7 @@
 	    <!--底部-->
  <div style="height: 55px;"></div>
  <div class="fix-bot">
-	   	  <div class="fix-bot-cart"><i>8</i></div>
+            <a href="{% url 'cart:购物车页面' %}"><div class="fix-bot-cart"><i id="cart_count">{{ cart_count }}</i></div></a>
 	   	  <a href="tureorder.html" class="list-js">去结算</a>
 	   	  <a href="tureorder.html" class="list-jsk">一键快购</a>
 	   	  <!--<div class="js-text">
@@ -120,29 +123,85 @@
 //购物数量加减
 $(function(){
 		$('.increase').click(function(){
+			     var self = $(this);
+                var current_num = parseInt(self.siblings('input').val());
+                current_num += 1;
+
+                //发送ajax到后台 添加购物车数据
+                //收集数据 count sku_id
+                var count = 1;
+                var sku_id = self.siblings('input').attr('sku_id');
+                //发送ajax
+                $.ajax({
+                    type:'post',
+                    url:'{% url "cart:添加购物车" %}',
+                    data:{
+                        "count":count,
+                        "sku_id":sku_id,
+                        "csrfmiddlewaretoken":"{{ csrf_token }}",
+                    },
+                    dataType:"json",
+                    success:function (data) {
+
+                        if(data.code == 0){
+                            if (current_num > 0) {
+                                self.siblings(".decrease").fadeIn();
+                                self.siblings(".text_box").fadeIn();
+                            }
+                            self.siblings('input').val(current_num);
+                             //更新购物车中总数量的显示
+                            $("#cart_count").text( data.cart_count)
+
+                        }else if (data.code == 1){
+                            //跳转到登陆页面
+                            var flag = confirm("没有登陆,是否立即登陆?");
+                            if(flag){
+                               location.href = "{% url 'user:登录' %}?next={% url 'goods:商品分类' cate_id order %}"
+                            }
+                        }
+                    }
+                });
+            });
+        $('.decrease').click(function(){
 			var self = $(this);
 			var current_num = parseInt(self.siblings('input').val());
-			current_num += 1;
 			if(current_num > 0){
-				self.siblings(".decrease").fadeIn();
-				self.siblings(".text_box").fadeIn();
+			    //发送ajax到后台 添加购物车数据
+                //收集数据 count sku_id
+                var count = -1;
+                var sku_id = self.siblings('input').attr('sku_id');
+                //发送ajax
+                $.ajax({
+                    type:'post',
+                    url:'{% url "cart:添加购物车" %}',
+                    data:{
+                        "count":count,
+                        "sku_id":sku_id,
+                        "csrfmiddlewaretoken":"{{ csrf_token }}",
+                    },
+                    dataType:"json",
+                    success: function (data) {
+                        if (data.code==0){
+                            current_num -= 1;
+                            if(current_num < 1){
+                                self.fadeOut();
+                                self.siblings(".text_box").fadeOut();
+                            }
+                            self.siblings('input').val(current_num);
+                             //更新购物车中总数量的显示
+                            $("#cart_count").text(data.cart_count)
+                        }
+                        else if(data.code == 1){
+                            //跳转到登陆页面
+                            var flag = confirm("没有登陆,是否立即登陆?");
+                            if(flag){
+                               location.href = "{% url 'user:登录' %}?next={% url 'goods:商品分类' cate_id order %}"
+                            }
+                        }
+                    }
+                })
 			}
-			self.siblings('input').val(current_num);
-			update_item(self.siblings('input').data('item-id'));
-		})		
-		$('.decrease').click(function(){
-			var self = $(this);
-			var current_num = parseInt(self.siblings('input').val());
-			if(current_num > 0){
-				current_num -= 1;
-                if(current_num < 1){
-	                self.fadeOut();
-					self.siblings(".text_box").fadeOut();
-                }
-				self.siblings('input').val(current_num);
-				update_item(self.siblings('input').data('item-id'));
-			}
-		})
+		});
 	})
 
 //改变价格上的url

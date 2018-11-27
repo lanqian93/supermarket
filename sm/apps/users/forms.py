@@ -7,7 +7,7 @@ from django.core.validators import RegexValidator
 #注册验证
 from django_redis import get_redis_connection
 
-from users.models import Users
+from users.models import Users, UserAddress
 
 
 class UsersForm(forms.Form):
@@ -169,12 +169,43 @@ class UpdateUser(forms.ModelForm):
         }
 
 
+#收货地址验证
+class AddAddressForm(forms.ModelForm):
+    class Meta:
+        model = UserAddress
+        exclude = ["user", "add_time", "update_time", "isDelete"]
+        error_messages = {
+            "username": {
+                "required": "请填写收货人！"
+            },
+            "phone": {
+                "required": "请填写手机号！"
+            },
+            "province": {
+                "required": "请填写完整地址！"
+            },
+            "city": {
+                "requires": "请填写完整地址！"
+            },
+            "area": {
+                "required": "请填写完整地址！"
+            },
+            "street": {
+                "required": "请填写详细地址！"
+            }
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #验证手机号格式
+        self.fields["phone"].validators.append(validators.RegexValidator(r'^1[3-9]\d{9}$', "手机号格式错误"))
+
+    def clean(self):
+        #验证数据库里面的地址是否已经超过六条
+        pass
 
 
-#添加地址验证
-class AddAddressForm(forms.Form):
-    school = forms.CharField(max_length=50, required=True, error_messages={"required": "宿舍必填", "max_length": "最大长度不超过50"})
-    building = forms.CharField(max_length=50, required=False, error_messages={"max_length": "最大长度不超过50"})
-    num = forms.CharField(max_length=50, required=False, error_messages={"max_length": "最大长度不超过50"})
-    custom = forms.CharField(max_length=20, required=True, error_messages={"required": "收货人必填", "max_length": "最大长度不超过20"})
-    phone = forms.CharField(max_length=11, required=True, error_messages={"required": "手机号必填", "max_length": "最大长度不超过11位"})
+
+
+
+

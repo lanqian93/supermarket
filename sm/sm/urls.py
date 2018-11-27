@@ -24,4 +24,6 @@ urlpatterns = [
     url(r'^order/', include("order.urls", namespace="order")),  #订单模块
     # 上传部件自动调用的上传地址
     url(r'^ckeditor/', include("ckeditor_uploader.urls")),
+    url(r'^search/', include('haystack.urls')),
+    # 添加自己的应用的子路由
 ]

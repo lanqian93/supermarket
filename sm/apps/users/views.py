@@ -49,6 +49,10 @@ class LoginView(View):
                 #保存登录的session
                 user = form.cleaned_data.get("user")
                 logining(request, user)
+                # 判断链接上是否有参数next,如果有就跳转到指定的页面
+                next = request.GET.get("next")
+                if next:
+                    return redirect(next)
                 return redirect("user:用户中心")
             # 返回结果
         else:  # 验证失败

@@ -1,0 +1,5 @@
+# 指定搜索的字段
+{{object.sku_name}}
+{{object.desc}}
+{{object.spu_id.detail}}
+{{object.spu_id.spu_name}}

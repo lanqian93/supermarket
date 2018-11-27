@@ -27,7 +27,7 @@ def logining(request, user):
     request.session['id'] = user.pk
     request.session['phone'] = user.phone
     request.session['head'] = user.head
-
+    request.session.set_expiry(0)
 
 
 
