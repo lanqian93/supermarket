@@ -1,4 +1,6 @@
 import hashlib
+import re
+from builtins import all, len
 
 from django import forms
 from django.core import validators
@@ -169,7 +171,7 @@ class UpdateUser(forms.ModelForm):
         }
 
 
-#收货地址验证
+#添加收货地址验证
 class AddAddressForm(forms.ModelForm):
     class Meta:
         model = UserAddress
@@ -181,13 +183,7 @@ class AddAddressForm(forms.ModelForm):
             "phone": {
                 "required": "请填写手机号！"
             },
-            "province": {
-                "required": "请填写完整地址！"
-            },
-            "city": {
-                "requires": "请填写完整地址！"
-            },
-            "area": {
+            "harea": {
                 "required": "请填写完整地址！"
             },
             "street": {
@@ -195,16 +191,68 @@ class AddAddressForm(forms.ModelForm):
             }
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        #验证手机号格式
-        self.fields["phone"].validators.append(validators.RegexValidator(r'^1[3-9]\d{9}$', "手机号格式错误"))
-
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        phone_regex = r"^1[3-9]\d{9}$"
+        p = re.compile(phone_regex)
+        if p.match(phone):
+            return phone
+        else:
+            raise forms.ValidationError("手机号格式错误")
     def clean(self):
         #验证数据库里面的地址是否已经超过六条
-        pass
+        #接收传递过来的用户id
+        user_id = self.data.get("user")
+        #查询用户的地址数量
+        count = UserAddress.objects.filter(user_id=user_id, isDelete=False).count()
+        if count >= 6:
+            raise forms.ValidationError("地址数量不能超过6")
+
+        # 默认收货地址只能有一个, 判断当前添加的是否 isDefault==True,
+        # 如果是就讲其他的收货地址都设置为False
+        isDeafault = self.cleaned_data.get("isDeafault")
+        if isDeafault:
+            UserAddress.objects.filter(user_id=user_id).update(isDeafault=False)
+        return self.cleaned_data
 
 
+"""修改收货地址"""
+class EditAddressForm(forms.ModelForm):
+    class Meta:
+        model = UserAddress
+        exclude = ["user", "add_time", "update_time", "isDelete"]
+        error_messages = {
+            "username": {
+                "required": "请填写收货人！"
+            },
+            "phone": {
+                "required": "请填写手机号！"
+            },
+            "harea": {
+                "required": "请填写完整地址！"
+            },
+            "street": {
+                "required": "请填写详细地址！"
+            }
+        }
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        phone_regex = r"^1[3-9]\d{9}$"
+        p = re.compile(phone_regex)
+        if p.match(phone):
+            return phone
+        else:
+            raise forms.ValidationError("手机号格式错误")
+    def clean(self):
+        #接收传递过来的用户id
+        user_id = self.data.get("user_id")
+        # 默认收货地址只能有一个, 判断当前添加的是否 isDefault==True,
+        # 如果是就讲其他的收货地址都设置为False
+        isDeafault = self.cleaned_data.get("isDeafault")
+        if isDeafault:
+            UserAddress.objects.filter(user_id=user_id).update(isDeafault=False)
+        return self.cleaned_data
 
 
 

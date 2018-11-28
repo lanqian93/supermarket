@@ -3,15 +3,15 @@ import random
 import re
 import uuid
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django_redis import get_redis_connection
 
 from db.base_view import BaseVerifyView
-from users.forms import UsersForm, LoginForm, UpdateUser, ForgetForm
+from users.forms import UsersForm, LoginForm, UpdateUser, ForgetForm, AddAddressForm, EditAddressForm
 from users.helper import logining, send_sms
-from users.models import Users
+from users.models import Users, UserAddress
 
 """注册视图"""
 class RegistView(View):
@@ -156,7 +156,12 @@ class UserInforView(BaseVerifyView):
 """收货地址列表"""
 class AddressListView(BaseVerifyView):
     def get(self, request):
-        return render(request, "user/gladdress.html")
+        #查询用户收货地址，显示到页面上，默认的显示在最上面
+        address = UserAddress.objects.filter(user_id=request.session.get("id"), isDelete=False).order_by("-isDeafault")
+        context = {
+            "address": address
+        }
+        return render(request, "user/gladdress.html", context)
     def post(self, request):
         pass
 
@@ -165,10 +170,89 @@ class AddressListView(BaseVerifyView):
 class AddAddressView(BaseVerifyView):
     def get(self, request):
         return render(request, "user/address.html")
-    def post(self):
-        pass
+    def post(self, request):
+        #接受数据
+        data = request.POST.dict()
+        data['user'] = request.session.get("id")
+        #验证数据
+        form = AddAddressForm(data)
+        if form.is_valid():
+            clean_data = form.cleaned_data
+            clean_data["user"] = Users.objects.get(pk=request.session.get("id"))
+            UserAddress.objects.create(**clean_data)
+            return redirect("user:收货地址列表")
+        else:
+            context = {
+                "error": form.errors,
+                "form": form
+            }
+            return render(request, "user/address.html", context)
 
 
+
+"""收货地址修改"""
+class AddressEditView(BaseVerifyView):
+    def get(self, request, id):
+        #根据id回显收货地址信息
+        user_id = request.session.get("id")
+        try:
+            address = UserAddress.objects.get(user_id=user_id, pk=id)
+        except address.DoesNotExist:
+            return redirect("user:收货地址列表")
+        context = {
+            "address": address
+        }
+        return render(request, "user/address_edit.html", context)
+
+    def post(self, request, id):
+        #接收参数
+        data = request.POST.dict()
+        user_id = request.session.get("id")
+        data['user_id'] = user_id
+        address_id = data.get("id")
+        form = EditAddressForm(data)
+        if form.is_valid():
+            #根据收货地址id更新数据
+            clean_data = form.cleaned_data
+            UserAddress.objects.filter(user_id=user_id, pk=address_id).update(**clean_data)
+            return redirect("user:收货地址列表")
+        else:
+            context = {
+                "error": form.errors,
+                "form": form,
+                "address": data,
+            }
+            return render(request, "user/address_edit.html", context)
+
+
+"""收货地址删除"""
+class AdressDelView(BaseVerifyView):
+    def get(self, request):
+        return JsonResponse({"code": 1, "errmsg": "请求方式错误"})
+    def post(self, request):
+        #获取传入的商品id，根据id删除商品信息
+        #最好也要判断用户id
+        user_id = request.session.get("id")
+        id = request.POST.get("address_id")
+        if user_id is None:
+            return JsonResponse({"code": 2, "errmsg": "请登录"})
+        UserAddress.objects.filter(user_id=user_id, pk=id).update(isDelete=True)
+        return JsonResponse({"code": 0})
+
+
+"""设置默认收货地址"""
+def defaultAddress(request):
+    if request.method == "POST":
+        #接收传入的商品id，当前商品设置为默认，其他的不是默认
+        id = request.POST.get("address_id")
+        user_id = request.session.get("id")
+        if user_id is None:
+            return JsonResponse({"code": 1, "errmsg": "没有登录"})
+        UserAddress.objects.all().update(isDeafault=False)
+        UserAddress.objects.filter(user_id=user_id, pk=id).update(isDeafault=True)
+        return JsonResponse({"code": 0})
+    else:
+        return JsonResponse({"code": 2, "errmsg": "参数错误"})
 """发送验证码"""
 def send_code(request):
     if request.method == "POST":

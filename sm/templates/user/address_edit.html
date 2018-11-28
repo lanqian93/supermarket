@@ -47,29 +47,36 @@ li{list-style-type: none;}
 				</a>
 			</div>
 			<h1 class="am-header-title">
-  	            <a href="" class="">新增收货地址</a>
+  	            <a href="" class="">修改收货地址</a>
             </h1>
 	    </header>
 	    <div style="height: 60px;"></div>
         <form action="" method="post">
             {% csrf_token %}
             <ul class="address">
-	    	<li><span id="city" style="padding-left:5px;">请选择收货地址</span></li>
+	    	<li><span id="city" style="padding-left:5px;">{{ address.hcity }}-{{ address.hproper }}-{{ address.harea }}</span>
+                 <input type="hidden" name="harea" data-id="0" id="harea" value="{{ address.harea }}">
+                <input type="hidden" name="hproper" data-id="0" id="hproper" value="{{ address.hproper }}">
+                <input type="hidden" name="hcity" data-id="0" id="hcity" value="{{ address.hcity }}">
+            </li>
                 <p>{{ error.harea.0 }}</p>
-	    	<li><input type="text" class="add-input" name="street" placeholder="请填写详细街道" /></li>
+	    	<li><input type="text" class="add-input" name="street" placeholder="详细地址" value="{{ address.street }}"/></li>
                 <p>{{ error.street.0 }}</p>
-	    	<li><input type="text" class="add-input" name="username" placeholder="请填写收货人姓名" /></li>
+	    	<li><input type="text" class="add-input" name="username" placeholder="收货人姓名" value="{{ address.username }}"/></li>
                 <p>{{ error.username }}</p>
-	    	<li><input type="text" class="add-input" name="phone" placeholder="请填写收货人手机号" /></li>
+	    	<li><input type="text" class="add-input" name="phone" placeholder="收货人手机号" value="{{address.phone }}" /></li>
                 <p>{{ error.phone.0 }}</p>
 	    </ul>
 	    <div class="moren">
 	    	<label class="am-checkbox am-warning">
-                 <input type="checkbox" name="isDeafault" checked="checked" data-am-ucheck checked>设为默认
+                 <input type="checkbox" name="isDeafault"  data-am-ucheck {% if address.isDeafault %}
+                 checked
+                 {% endif %}>设为默认
             </label>
 
 	    </div>
             <p>{{ form.non_field_errors.0 }}</p>
+            <input type="hidden" name="id" value="{{ address.id }}">
 	    <input type="submit" class="login-btn" value="确认提交">
         </form>
         <script type="text/javascript">

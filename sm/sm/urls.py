@@ -16,8 +16,11 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from goods.views import IndexView
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^$',  IndexView.as_view()),  #网站首页
     url(r'^user/', include("users.urls", namespace="user")),  #用户模块
     url(r'^goods/', include("goods.urls", namespace="goods")),  #商品模块
     url(r'^cart/', include("cart.urls", namespace="cart")),  #购物车模块

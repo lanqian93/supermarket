@@ -39,10 +39,13 @@ class Users(models.Model):
 class UserAddress(models.Model):
     user = models.ForeignKey(to="Users", verbose_name="创建人")
     username = models.CharField(max_length=50, verbose_name="收货人姓名")
-    phone = models.CharField(max_length=11, verbose_name="收货人手机号")
-    province = models.CharField(max_length=100, verbose_name="省")
-    city = models.CharField(max_length=100, verbose_name="市", blank=True, default="")
-    area = models.CharField(max_length=100, verbose_name="区", blank=True, default="")
+    phone = models.CharField(max_length=11, verbose_name="收货人手机号",
+                             validators=[
+                                 RegexValidator(r'^1[3-9]\d{9}$', "手机号码格式错误!")
+                             ])
+    hcity = models.CharField(max_length=100, verbose_name="省",  blank=True, null=True)
+    hproper = models.CharField(max_length=100, verbose_name="市", blank=True, null=True)
+    harea = models.CharField(max_length=100, verbose_name="区",)
     street = models.CharField(max_length=255, verbose_name="街道")
     isDeafault = models.BooleanField(default=False, blank=True, verbose_name="是否设置默认地址")
     add_time = models.DateTimeField(auto_now_add=True, verbose_name="添加时间")
