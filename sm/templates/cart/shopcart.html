@@ -34,11 +34,12 @@
 	    	<p>亲、您的购物车还是空空的哦，快去装满它!</p>
 	    	<a href="{% url 'goods:商品首页' %}" class="goshopping">前去逛逛</a>
 	    </div>
-	    <ul class="shopcart-list">
-	    	{% for goods in goodsskus %}
+        <form action="{% url 'order:确认订单' %}" method="get" id="cart">
+            <ul class="shopcart-list">
+	    	    {% for goods in goodsskus %}
 	    	    <li>
 	    		<label class="am-checkbox am-warning">
-                 <input type="checkbox" checked="checked" value="" data-am-ucheck checked>
+                 <input type="checkbox" checked="checked" name="sku_id" value="{{ goods.pk }}" data-am-ucheck checked>
                 </label>
                 <a href="{% url 'goods:商品详情' goods.pk%}"><img src="{{ MEDIA_URL }}{{ goods.url }}" class="shop-pic" /></a>
                 <div class="shop-list-mid">
@@ -48,24 +49,24 @@
                 <div class="list-cart1">
 	                <div class="d-stock">
 			                <a class="decrease">-</a>
-			                <input sku_id={{ goods.pk }} id="cart_count" readonly="" class="text_box num" name="" type="text" value="{{ goods.count }}">
+			                <input sku_id={{ goods.pk }}  readonly="" class="text_box num" name="" type="text" value="{{ goods.count }}">
 			                <a class="increase">+</a>
 	                </div>
                 </div>
 
 	    	</li>
 	    	{% endfor %}
-
 	    	<div style="height: 10px; background: #eee;"></div>
 	    </ul>
-	    
+        </form>
+
 	    <div class="shop-fix">
-	    	
+
 	    	<label class="am-checkbox am-warning">
                <input type="checkbox" id="ck" checked="checked" value="" data-am-ucheck checked>
             </label>
             <a class="del">全选</a>
-            <a href="tureorder.html" class="js-btn">去结算</a>
+            <a href="javascript:;" class="js-btn">去结算</a>
             <div class="js-text">
             	<P>合计：￥<b id="total">0.00</b></P>
             	<p class="js-car">免费配送</p>
@@ -89,7 +90,7 @@
             </a>
           </li>
           <li>
-            <a href="shopcart.html" class="">
+            <a href="{% url 'cart:购物车页面' %}" class="">
                 <span class="am-icon-shopping-cart"></span>
                 <span class="am-navbar-label">购物车</span>
             </a>
@@ -110,12 +111,11 @@
       </ul>
 </div>
  
- 
- 
+
 <script>
 	//购物数量加减
 	$(function(){
-	    calculate()
+	    calculate();
 		$('.increase').click(function(){
 			     var self = $(this);
                 var current_num = parseInt(self.siblings('input').val());
@@ -205,7 +205,7 @@
             $(".shopcart-list").find(":checkbox").prop("checked", status)
             //重新计算价格
             calculate()
-        })
+        });
         
         //处理商品列表中的复选框, 绑定change事件
          $(".shopcart-list").find(":checkbox").on("change", function () {
@@ -217,7 +217,17 @@
              }else {
                  $("#ck").prop("checked", false)
              }
-         })
+         });
+
+        //结算提交数据到确认订单
+        $(".js-btn").on("click", function () {
+            //console.debug(111)
+            if($(".shop-fix").find(":checked").length>0){
+                $("#cart").submit()
+            }else {
+                alert("请选择商品")
+            }
+        })
 	})
 </script>
 <script src="{% static 'js/jquery.min.js' %}"></script>

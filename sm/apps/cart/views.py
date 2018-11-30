@@ -74,6 +74,8 @@ class AddCartView(View):
         return JsonResponse({"code": 0, "cart_count": cart_count})
 
 
+
+#购物车页面
 class ShopCartView(BaseVerifyView):
     def get(self, request):
         # 获取商品sku

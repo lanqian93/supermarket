@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>超市</title>
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+        <link rel="icon" type="image/png" href="/theme/default/images/favicon.png">
+		<link href="{% static 'css/amazeui.min.css' %}" rel="stylesheet" type="text/css" />
+		<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" />
+	</head>
+	<body>
+		<header data-am-widget="header" class="am-header am-header-default sq-head ">
+			<div class="am-header-left am-header-nav">
+				<a href="javascript:history.back()" class="">
+					<i class="am-icon-chevron-left"></i>
+				</a>
+			</div>
+			<h1 class="am-header-title">
+  	            <a href="" class="">确认订单</a>
+            </h1>
+	    </header>
+	    <div style="height: 49px;"></div>
+        <form action="" method="post" id="order">
+            {% csrf_token %}
+            {% if address %}
+            <h5 class="order-tit">收货人信息</h5>
+                <input type="hidden" name="address_id" value="{{ address.pk }}">
+             <div class="order-name">
+                <a href="{% url 'user:收货地址列表' %}">
+                <p class="order-tele">{{ address.username }}&nbsp;&nbsp;&nbsp;{{ address.phone }}</p>
+                <p class="order-add">
+                    {{ address.hcity }}
+                    {{ address.hproper }}
+                    {{ address.harea }}
+                    {{ address.detail }}
+                </p>
+            </a>
+            <i class="am-icon-angle-right"></i>
+        </div>
+         {% else %}
+            <div class="add-address">
+           <a href="{% url 'user:添加地址' %}">+新建收货地址</a>
+           <i class="am-icon-angle-right"></i>
+        </div>
+        {% endif %}
+            <div style="background: #eee; height: 10px;"></div>
+            <ul class="shopcart-list" style="padding-bottom: 0;">
+            {% for good in goods %}
+                <input type="hidden" name="sku_id" value="{{ good.pk }}">
+                <li>
+                <img src="{{ MEDIA_URL }}{{ good.url }}" class="shop-pic" />
+                <div class="order-mid">
+                	<div class="tit">{{good.spu_id.spu_name}}&emsp;{{ good.sku_name }}</div>
+                	<div class="order-price">￥{{ good.price}} <i>X2</i></div>
+                </div>
+	    	</li>
+            {% endfor %}
+	        </ul>
+	        <ul class="order-infor">
+	    	<li class="order-infor-first">
+	    		商品总计：<span id="total">{{ total }}</span>
+	    	</li>
+	    	<li class="order-infor-first trans">
+	    		<span>运输方式：</span>
+                <select name="transport" id="ys">
+                    {% for transport in transports %}
+                        <option value="{{ transport.pk }}" name="trans" tran_price="{{ transport.price }}">{{ transport.transport_name }}--￥<i>{{ transport.price }}</i></option>
+                    {% endfor %}
+                </select>
+	    	</li>
+	    </ul>
+	        <div style="background: #eee; height: 10px;"></div>
+	    <textarea placeholder="备注说明" name="" class="bz-infor"></textarea>
+        </form>
+	    <div style="background: #eee; height: 10px;"></div>
+	    <div style="height: 55px;"></div>
+	    <div class="shop-fix">
+	    	<div class="order-text">
+	    		应付总额：<span>￥<i id="all_price">0.00</i></span>
+	    	</div>
+	    	<a href="javascript:;" class="js-btn">提交订单</a>
+	    </div>
+<!--底部-->
+ <div style="height: 55px;"></div>
+ <div data-am-widget="navbar" class="am-navbar am-cf am-navbar-default sq-foot am-no-layout" id="">
+      <ul class="am-navbar-nav am-cf am-avg-sm-5">   
+          <li>
+            <a href="{% url 'goods:商品首页' %}" class="">
+                <span class="am-icon-home"></span>
+                <span class="am-navbar-label">首页</span>
+            </a>
+          </li>
+          <li>
+            <a href="message.html" class="">
+                <span class="am-icon-comments"></span>
+                <span class="am-navbar-label">动态</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'cart:购物车页面' %}" class="">
+                <span class="am-icon-shopping-cart"></span>
+                <span class="am-navbar-label">购物车</span>
+            </a>
+          </li>
+          <li>
+            <a href="allorder.html" class="">
+                <span class="am-icon-file-text"></span>
+                <span class="am-navbar-label">订单</span>
+            </a>
+          </li>
+ 
+          <li>
+            <a href="{% url 'user:用户中心' %}" class="curr">
+                <span class="am-icon-user"></span>
+                <span class="am-navbar-label">我的</span>
+            </a>
+          </li>
+      </ul>
+</div>
+ 
+ 
+ 
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/amazeui.min.js' %}"></script>
+        <script>
+            //重新计算加上运费的金额合计
+            $(function () {
+                function calculate() {
+                    total = $("#total").text();
+                    tran_price = $(".trans").find(":selected").attr("tran_price");
+                    all_price = parseFloat(total)+parseFloat(tran_price)
+                    $("#all_price").text(all_price.toFixed(2))
+                }
+                calculate()
+                //运输方式改变重新计算价格
+                $("#ys").on("change", function () {
+                    calculate()
+                })
+                //点击提交，通过ajax发送数据
+                $(".js-btn").on("click", function () {
+                    //console.debug(111)
+                    //准备数据
+                    var data = $("#order").serialize()
+                    //发送ajax
+                    $.ajax({
+                        type:"POST",
+                        url:"{% url 'order:确认订单' %}",
+                        data:data,
+                        dataType:"json",
+                        success:function (data) {
+                            if(data.code==0){
+                                location.href="{% url 'order:确认支付'%}?sn="+data.sn
+                            }else {
+                                alert("订单创建失败")
+                            }
+                        }
+                    })
+                })
+            })
+        </script>
+	</body>
+</html>
